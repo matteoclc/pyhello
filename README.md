@@ -5,6 +5,7 @@
 * Docker to build the image and run the container (worker)
 * Python3 pip on the worker to install dependencies
 * Git (optional) to clone the repo
+* Internet access on the worker
 
 ### Setup the environment
 #### Get the app
