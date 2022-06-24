@@ -1,0 +1,44 @@
+---
+
+- hosts: worker
+  become: true
+  vars:
+    sources_dest_path: "/opt/pyhello/buildsrc"
+    imgname: "pyhello"
+    imgtag: "latest"
+    exposed_port: "5000"
+  tasks:
+    - name: Ensure python docker module is installed
+      command: pip3 install docker
+
+    - name: Copy sources
+      copy:
+        src: ./buildsrc
+        dest: /opt/pyhello
+
+    - name: Build image
+      community.docker.docker_image:
+        name: "{{ imgname }}:{{ imgtag }}"
+        state: present
+        source: build
+        build: 
+          path: "{{ sources_dest_path }}"
+    
+    - name: Remove source files
+      file:
+        path: "{{ sources_dest_path }}"
+        state: absent
+
+    - name: Start container
+      community.docker.docker_container:
+        name: pyhello-app
+        image: "{{ imgname }}:{{ imgtag }}"
+        ports: "{{ exposed_port }}:5000"
+    
+    - name: Check app response
+      uri:
+        url: http://localhost:5000/hello
+    
+    - name: Final message
+      debug:
+        msg: "PyHello is alive! you can check at http://{{ ansible_default_ipv4.address }}:5000/hello"
